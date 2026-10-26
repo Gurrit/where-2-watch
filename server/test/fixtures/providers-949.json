@@ -1,0 +1,7 @@
+{"id":949,"results":{
+ "SE":{"link":"https://www.themoviedb.org/movie/949-heat/watch?locale=SE",
+  "flatrate":[{"provider_id":8,"provider_name":"Netflix","display_priority":2},{"provider_id":119,"provider_name":"Amazon Prime Video","display_priority":1}],
+  "rent":[{"provider_id":2,"provider_name":"Apple TV","display_priority":3}],
+  "ads":[{"provider_id":73,"provider_name":"Tubi TV","display_priority":9}]},
+ "US":{"buy":[{"provider_id":3,"provider_name":"Google Play Movies","display_priority":1}]}
+}}
