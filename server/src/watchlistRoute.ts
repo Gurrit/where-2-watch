@@ -15,12 +15,21 @@ export const MAX_ENTRIES = 5000;
  * Responds with NDJSON: {type:"start",total} then {type:"film",...FilmResult} per film as it resolves,
  * then {type:"done"}. Nothing from the upload is logged or stored.
  */
-export function registerWatchlistRoute(app: FastifyInstance, client: TmdbClient) {
+export function registerWatchlistRoute(
+  app: FastifyInstance,
+  client: TmdbClient,
+  limits: { uploadsPer10Min: number; maxConcurrentJobs: number },
+) {
+  let activeJobs = 0;
+
   app.addContentTypeParser('text/csv', { parseAs: 'string', bodyLimit: MAX_UPLOAD_BYTES }, (_req, body, done) =>
     done(null, body),
   );
 
-  app.post<{ Querystring: { country?: string; source?: string }; Body: string }>('/api/watchlist', async (req, reply) => {
+  app.post<{ Querystring: { country?: string; source?: string }; Body: string }>(
+    '/api/watchlist',
+    { config: { rateLimit: { max: limits.uploadsPer10Min, timeWindow: '10 minutes' } } },
+    async (req, reply) => {
     const country = parseCountry(req.query.country);
     if (!country) return reply.code(400).send({ error: 'country must be a two-letter code' });
     const parser = parsers[req.query.source ?? 'letterboxd'];
@@ -39,8 +48,15 @@ export function registerWatchlistRoute(app: FastifyInstance, client: TmdbClient)
       return reply.code(413).send({ error: `At most ${MAX_ENTRIES} films are supported` });
     }
 
+    if (activeJobs >= limits.maxConcurrentJobs) {
+      return reply.code(503).header('retry-after', '10').send({ error: 'The server is busy, try again shortly' });
+    }
+    activeJobs++;
     const abort = new AbortController();
-    reply.raw.on('close', () => abort.abort());
+    reply.raw.on('close', () => {
+      activeJobs--;
+      abort.abort();
+    });
 
     async function* lines() {
       yield JSON.stringify({ type: 'start', total: entries.length }) + '\n';
@@ -55,5 +71,6 @@ export function registerWatchlistRoute(app: FastifyInstance, client: TmdbClient)
       .header('cache-control', 'no-store')
       .header('x-accel-buffering', 'no')
       .send(Readable.from(lines()));
-  });
+    },
+  );
 }

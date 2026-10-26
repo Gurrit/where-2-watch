@@ -46,3 +46,36 @@ describe('POST /api/watchlist', () => {
     expect((await post('x'.repeat(1024 * 1024 + 1))).statusCode).toBe(413);
   });
 });
+
+describe('limits', () => {
+  const csvBody = 'Date,Name,Year,Letterboxd URI\n2024-01-01,Heat,1995,u\n';
+  const send = (a: ReturnType<typeof buildApp>) =>
+    a.inject({ method: 'POST', url: '/api/watchlist?country=SE', headers: { 'content-type': 'text/csv' }, payload: csvBody });
+
+  it('rate limits uploads per IP', async () => {
+    const limited = buildApp({ client, limits: { uploadsPer10Min: 2 } });
+    expect((await send(limited)).statusCode).toBe(200);
+    expect((await send(limited)).statusCode).toBe(200);
+    expect((await send(limited)).statusCode).toBe(429);
+  });
+
+  it('rate limits the API per IP', async () => {
+    const limited = buildApp({ client, limits: { perMinute: 2 } });
+    const codes = [];
+    for (let i = 0; i < 3; i++) codes.push((await limited.inject('/api/health')).statusCode);
+    expect(codes).toEqual([200, 200, 429]);
+  });
+
+  it('refuses new jobs when too many are running', async () => {
+    const limited = buildApp({ client, limits: { maxConcurrentJobs: 0 } });
+    const res = await send(limited);
+    expect(res.statusCode).toBe(503);
+    expect(res.headers['retry-after']).toBe('10');
+  });
+
+  it('frees the job slot when a job finishes', async () => {
+    const limited = buildApp({ client, limits: { maxConcurrentJobs: 1 } });
+    expect((await send(limited)).statusCode).toBe(200);
+    expect((await send(limited)).statusCode).toBe(200);
+  });
+});
