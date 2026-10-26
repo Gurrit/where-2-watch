@@ -61,7 +61,7 @@ Upload a Letterboxd watchlist export and see, for a chosen country, which stream
 ## 5. Architecture sketch
 ```
 Browser (React SPA)
-  ├─ upload CSV  ───────────►  POST /api/watchlist   (multipart)
+  ├─ upload CSV  ───────────►  POST /api/watchlist   (CSV as a `text/csv` body)
   │                              ├─ parser (pluggable: letterboxd | imdb*)
   │                              ├─ matcher  ── TMDB search
   │                              ├─ availability ── TMDB watch/providers
@@ -74,7 +74,7 @@ Browser (React SPA)
 - Providers list per country (`/watch/providers/movie`) is fetched and cached to populate the "my services" picker.
 
 ## 6. API (initial)
-- `POST /api/watchlist?country=SE` — body: CSV. Response: event stream of `{type: "progress" | "film" | "done" | "error"}`.
+- `POST /api/watchlist?country=SE[&source=letterboxd]` — body: CSV (`text/csv`, read client-side from the chosen file; no multipart). Response: NDJSON stream of `{type: "start", total}`, `{type: "film", ...}` per film as it resolves (completion order; `index` correlates), then `{type: "done"}`.
 - `GET /api/providers?country=SE` — services available in a country.
 - `GET /api/availability?ids=1,2,3&country=SE` — re-query availability for known TMDB IDs (country switch, manual picks).
 - `GET /api/search?q=...&year=...` — candidates for manual correction.
