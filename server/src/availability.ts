@@ -1,4 +1,4 @@
-import type { TmdbProvider, TmdbWatchProvidersResponse } from './tmdb/types.js';
+import type { TmdbCountryProviders, TmdbProvider } from './tmdb/types.js';
 
 export interface ProviderRef {
   id: number;
@@ -20,8 +20,11 @@ const toRefs = (list: TmdbProvider[] | undefined): ProviderRef[] =>
     .map((p) => ({ id: p.provider_id, name: p.provider_name }));
 
 /** Free/ad-supported tiers are deliberately ignored (see spec). */
-export function extractAvailability(res: TmdbWatchProvidersResponse, country: string): Availability {
-  const entry = res.results[country.toUpperCase()];
+export function extractAvailability(
+  results: Record<string, TmdbCountryProviders> | undefined,
+  country: string,
+): Availability {
+  const entry = results?.[country.toUpperCase()];
   return {
     ...(entry?.link ? { link: entry.link } : {}),
     flatrate: toRefs(entry?.flatrate),

@@ -4,7 +4,7 @@ import type { Cache } from './cache.js';
 const HOUR = 60 * 60 * 1000;
 export const TTL = {
   search: 7 * 24 * HOUR,
-  providers: 24 * HOUR,
+  movie: 24 * HOUR,
   providerList: 24 * HOUR,
 };
 
@@ -18,7 +18,7 @@ export function withCache(client: TmdbClient, cache: Cache): TmdbClient {
   }
   return {
     searchMovies: (title) => cached(`search:${title.toLowerCase()}`, TTL.search, () => client.searchMovies(title)),
-    getWatchProviders: (id) => cached(`providers:${id}`, TTL.providers, () => client.getWatchProviders(id)),
+    getMovie: (id) => cached(`movie:${id}`, TTL.movie, () => client.getMovie(id)),
     listMovieProviders: (country) =>
       cached(`providerlist:${country.toUpperCase()}`, TTL.providerList, () => client.listMovieProviders(country)),
   };

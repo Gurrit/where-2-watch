@@ -51,7 +51,7 @@ describe('withCache', () => {
   it('calls the underlying client once per key', async () => {
     const inner: TmdbClient = {
       searchMovies: vi.fn(async () => ({ page: 1, results: [], total_results: 0 })),
-      getWatchProviders: vi.fn(),
+      getMovie: vi.fn(),
       listMovieProviders: vi.fn(),
     };
     const client = withCache(inner, createCache());

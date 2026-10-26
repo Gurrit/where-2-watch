@@ -38,3 +38,14 @@ export interface TmdbWatchProvidersResponse {
 export interface TmdbProviderListResponse {
   results: TmdbProvider[];
 }
+
+export interface TmdbMovieDetails {
+  id: number;
+  title: string;
+  release_date?: string;
+  runtime?: number | null;
+  vote_average?: number;
+  poster_path?: string | null;
+  /** Present because we request append_to_response=watch/providers. */
+  'watch/providers'?: { results: Record<string, TmdbCountryProviders> };
+}

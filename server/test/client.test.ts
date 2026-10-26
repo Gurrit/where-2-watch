@@ -19,21 +19,21 @@ describe('createTmdbClient', () => {
       .fn()
       .mockResolvedValueOnce(json({}, 429, { 'retry-after': '0' }))
       .mockResolvedValueOnce(json({}, 503))
-      .mockResolvedValueOnce(json({ id: 1, results: {} }));
-    const out = await createTmdbClient({ apiKey: 'k', fetch, backoffMs: 1 }).getWatchProviders(1);
+      .mockResolvedValueOnce(json({ id: 1, title: 'X' }));
+    const out = await createTmdbClient({ apiKey: 'k', fetch, backoffMs: 1 }).getMovie(1);
     expect(out.id).toBe(1);
     expect(fetch).toHaveBeenCalledTimes(3);
   });
 
   it('does not retry 4xx', async () => {
     const fetch = vi.fn(async () => json({}, 404));
-    await expect(createTmdbClient({ apiKey: 'k', fetch, backoffMs: 1 }).getWatchProviders(1)).rejects.toBeInstanceOf(TmdbError);
+    await expect(createTmdbClient({ apiKey: 'k', fetch, backoffMs: 1 }).getMovie(1)).rejects.toBeInstanceOf(TmdbError);
     expect(fetch).toHaveBeenCalledTimes(1);
   });
 
   it('gives up after maxRetries', async () => {
     const fetch = vi.fn(async () => json({}, 500));
-    await expect(createTmdbClient({ apiKey: 'k', fetch, backoffMs: 1, maxRetries: 2 }).getWatchProviders(1)).rejects.toThrow(/500/);
+    await expect(createTmdbClient({ apiKey: 'k', fetch, backoffMs: 1, maxRetries: 2 }).getMovie(1)).rejects.toThrow(/500/);
     expect(fetch).toHaveBeenCalledTimes(3);
   });
 });

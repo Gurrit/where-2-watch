@@ -6,7 +6,7 @@ const res = JSON.parse(readFileSync(new URL('./fixtures/providers-949.json', imp
 
 describe('extractAvailability', () => {
   it('returns ordered flatrate/rent/buy for the country and ignores ads', () => {
-    const a = extractAvailability(res, 'se');
+    const a = extractAvailability(res.results, 'se');
     expect(a.flatrate.map((p) => p.name)).toEqual(['Amazon Prime Video', 'Netflix']);
     expect(a.rent).toEqual([{ id: 2, name: 'Apple TV' }]);
     expect(a.buy).toEqual([]);
@@ -14,7 +14,11 @@ describe('extractAvailability', () => {
     expect(a.link).toContain('themoviedb.org');
   });
 
+  it('handles a missing providers block', () => {
+    expect(extractAvailability(undefined, 'SE')).toEqual({ flatrate: [], rent: [], buy: [] });
+  });
+
   it('returns empty lists for a country with no data', () => {
-    expect(extractAvailability(res, 'JP')).toEqual({ flatrate: [], rent: [], buy: [] });
+    expect(extractAvailability(res.results, 'JP')).toEqual({ flatrate: [], rent: [], buy: [] });
   });
 });

@@ -1,7 +1,7 @@
 import type {
+  TmdbMovieDetails,
   TmdbProviderListResponse,
   TmdbSearchResponse,
-  TmdbWatchProvidersResponse,
 } from './types.js';
 
 export class TmdbError extends Error {
@@ -21,7 +21,8 @@ export interface TmdbClientOptions {
 
 export interface TmdbClient {
   searchMovies(title: string): Promise<TmdbSearchResponse>;
-  getWatchProviders(movieId: number): Promise<TmdbWatchProvidersResponse>;
+  /** Movie details with watch providers appended (one request). */
+  getMovie(movieId: number): Promise<TmdbMovieDetails>;
   listMovieProviders(country: string): Promise<TmdbProviderListResponse>;
 }
 
@@ -61,7 +62,7 @@ export function createTmdbClient(opts: TmdbClientOptions): TmdbClient {
   return {
     searchMovies: (title) =>
       get('/search/movie', { query: title, include_adult: 'false', language: 'en-US' }),
-    getWatchProviders: (id) => get(`/movie/${id}/watch/providers`),
+    getMovie: (id) => get(`/movie/${id}`, { append_to_response: 'watch/providers', language: 'en-US' }),
     listMovieProviders: (country) => get('/watch/providers/movie', { watch_region: country }),
   };
 }
