@@ -1,11 +1,14 @@
 import Fastify from 'fastify';
 import fastifyStatic from '@fastify/static';
 import { config } from './config.js';
+import { registerRoutes } from './routes.js';
+import type { TmdbClient } from './tmdb/client.js';
 
-export function buildApp() {
+export function buildApp({ client }: { client: TmdbClient }) {
   const app = Fastify({ logger: { level: 'info', redact: ['req.headers.authorization'] } });
 
   app.get('/api/health', async () => ({ ok: true }));
+  registerRoutes(app, client);
 
   if (config.staticDir) {
     app.register(fastifyStatic, { root: config.staticDir });
