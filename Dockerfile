@@ -1,4 +1,4 @@
-FROM node:22-slim AS build
+FROM node:24-slim AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
 COPY server/package.json server/
@@ -7,7 +7,7 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-FROM node:22-slim
+FROM node:24-slim
 WORKDIR /app
 ENV NODE_ENV=production STATIC_DIR=/app/web/dist
 COPY package.json package-lock.json ./
