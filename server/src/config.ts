@@ -1,6 +1,8 @@
 export const config = {
   port: Number(process.env.PORT ?? 3000),
   host: process.env.HOST ?? '0.0.0.0',
+  /** Override for local development against a mock TMDB. */
+  tmdbBaseUrl: process.env.TMDB_BASE_URL || undefined,
   tmdbApiKey: process.env.TMDB_API_KEY ?? '',
   staticDir: process.env.STATIC_DIR ?? '',
   /** SQLite cache file; empty means memory only. */

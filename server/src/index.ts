@@ -13,7 +13,7 @@ if (!config.tmdbApiKey) {
 const cache = createCache({ dbPath: config.cachePath || undefined });
 // Cache sits outside the limiter so cache hits don't consume TMDB request slots.
 const client = withCache(
-  limitClient(createTmdbClient({ apiKey: config.tmdbApiKey }), createLimiter(config.tmdbConcurrency)),
+  limitClient(createTmdbClient({ apiKey: config.tmdbApiKey, baseUrl: config.tmdbBaseUrl }), createLimiter(config.tmdbConcurrency)),
   cache,
 );
 
